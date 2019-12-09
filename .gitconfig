@@ -1,5 +1,5 @@
 [user]
-	name = haradalibtech
+	name = haradakunihiko
 	email = sthsoulful@gmail.com
 [alias]
 st = status
@@ -10,9 +10,14 @@ ln = log --graph --pretty=format:'%C(yellow)%h%C(cyan)%d%Creset %s %C(green)- %a
 ls = log --stat --abbrev-commit -n 1 # display previous log
 co = checkout
 
-bl = for-each-ref --sort='committerdate' --format="%(refname:short)" refs/heads/
+#bl = !git for-each-ref --sort='committerdate' --format='%(refname:short)' refs/heads/ | peko | xargs git co
+bl = !git for-each-ref --sort='-committerdate' --format=' %(refname:short)%(if)%(authorname)%(then) Authored by: %(authorname)%(end)' refs/heads/ | peco | awk '{print $1}' | xargs git co
+
 
 findloststash = !git fsck --unreachable | grep commit | cut -d' ' -f3 | xargs git log --merges --no-walk --grep=WIP
+unmerged = !git log --merges --oneline develop | head -n 100 | grep 'Merge pull request' | grep -vE $(git log --oneline | grep 'Merge pull request' | head -n 100 | awk -F ' ' '{print $5}' | grep -E "^#[0-9]+$" | tr '\n' '|' | sed 's/|$//') | grep -vE 'Merge tag|hotfix/|release/' | peco | awk '{print $1}' 
+
+cherry-pick-unmerged = !git log --merges --oneline develop | head -n 100 | grep 'Merge pull request' | grep -vE $(git log --oneline | grep 'Merge pull request' | head -n 100 | awk -F ' ' '{print $5}' | grep -E "^#[0-9]+$" | tr '\n' '|' | sed 's/|$//') | grep -vE 'Merge tag|hotfix/|release/' | peco | awk '{print $1}' | xargs git cherry-pick -m 1
 
 [push]
 	default = simple
@@ -22,3 +27,13 @@ findloststash = !git fsck --unreachable | grep commit | cut -d' ' -f3 | xargs gi
 	required = true
 [color]
 	ui = auto
+[core]
+	excludesfile = /Users/kunihikoharada/.gitignore_global
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[commit]
+	template = /Users/kunihikoharada/.stCommitMsg
